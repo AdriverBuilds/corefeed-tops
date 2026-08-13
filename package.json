@@ -1,0 +1,6 @@
+{
+  "name": "corefeed-tops",
+  "private": true,
+  "version": "0.1.5",
+  "description": "COREFEED public season tops — static site for Vercel"
+}

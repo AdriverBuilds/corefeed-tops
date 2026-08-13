@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>COREFEED · TOPS</title>
+  <meta name="description" content="Rankings de temporada de COREFEED. Combo, créditos, speedrun. Dejá tu huella." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Exo+2:wght@500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="top">
+    <div class="brand">
+      <div class="mark">COREFEED</div>
+      <div class="tag">TRANSMISIÓN PÚBLICA · TOPS DE TEMPORADA</div>
+    </div>
+    <a class="play" href="https://adriverbuilds.itch.io/corefeed" target="_blank" rel="noopener">JUGAR DEMO</a>
+  </header>
+
+  <section class="season" id="season">
+    <div>
+      <h1 id="seasonName">SEASON BETA 1</h1>
+      <p id="seasonBlurb">Temporada beta · quincenal · tu huella queda</p>
+    </div>
+    <div class="fomo">
+      <div class="fomo-label">TERMINA EN</div>
+      <div class="fomo-clock" id="clock">--:--:--:--</div>
+    </div>
+  </section>
+
+  <nav class="tabs" id="tabs">
+    <button data-board="max_combo" class="on">COMBO MÁX</button>
+    <button data-board="round_credits">CRÉDITOS / RONDA</button>
+    <button data-board="speedrun_ms">SPEEDRUN DEMO</button>
+  </nav>
+
+  <main class="grid">
+    <section class="board">
+      <div class="board-head">
+        <h2 id="boardTitle">COMBO MÁX</h2>
+        <div class="meta" id="boardMeta">cargando…</div>
+      </div>
+      <div class="rows" id="rows"></div>
+      <div class="pager">
+        <button id="prev" type="button">← ANT</button>
+        <span id="pageInfo">—</span>
+        <button id="next" type="button">SIG →</button>
+      </div>
+    </section>
+
+    <aside class="marks">
+      <h2>HUELLAS</h2>
+      <p class="hint">Al cerrar la demo, el speedrun pregunta si querés dejar un mensaje. Acá vive.</p>
+      <div id="marks"></div>
+    </aside>
+  </main>
+
+  <div class="modal" id="modal" hidden>
+    <div class="sheet" role="dialog">
+      <button class="x" id="closeModal" type="button">✕</button>
+      <h2 id="pName">OPERADOR</h2>
+      <p class="hint" id="pTitle"></p>
+      <div id="pBoards"></div>
+      <div class="pins" id="pPins"></div>
+      <blockquote id="pMark" hidden></blockquote>
+      <a id="pMedia" hidden target="_blank" rel="noopener">media</a>
+    </div>
+  </div>
+
+  <footer>
+    COREFEED 0.1.5.0-demo · AdriverBuilds · los tops se reinician cada 15 días ·
+    <a href="https://adriverbuilds.itch.io/corefeed">itch.io</a>
+  </footer>
+
+  <script src="./config.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
