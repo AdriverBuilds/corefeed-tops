@@ -5,30 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>COREFEED · TOPS</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect fill='%23050810' width='64' height='64'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%233de7ff' stroke-width='4'/%3E%3C/svg%3E" />
-  <meta name="description" content="Rankings de temporada de COREFEED. Combo, créditos, speedrun. Dejá tu huella." />
+  <meta name="description" content="Rankings vivos de COREFEED. Combo, créditos, speedrun. Tocá un pin. Dejá tu huella." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Exo+2:wght@500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <div class="scan"></div>
   <div class="noise"></div>
+
   <header class="top">
     <div class="brand">
-      <div class="mark">COREFEED</div>
-      <div class="tag">TRANSMISIÓN PÚBLICA · TOPS DE TEMPORADA</div>
+      <div class="core-mini" aria-hidden="true"></div>
+      <div>
+        <div class="mark">COREFEED</div>
+        <div class="tag">TRANSMISIÓN PÚBLICA · TOPS DE TEMPORADA</div>
+      </div>
     </div>
-    <a class="play" href="https://adriverbuilds.itch.io/corefeed" target="_blank" rel="noopener">JUGAR DEMO</a>
+    <nav class="nav">
+      <a class="ghost" href="#pines">PINES</a>
+      <a class="play" href="https://adriverbuilds.itch.io/corefeed" target="_blank" rel="noopener">JUGAR DEMO</a>
+    </nav>
   </header>
 
   <section class="season" id="season">
+    <div class="core-hero" aria-hidden="true">
+      <div class="core-ring"></div>
+      <div class="core-ring delay"></div>
+      <div class="core-heart"></div>
+    </div>
     <div>
+      <p class="kicker">EL NÚCLEO ESTÁ CONTANDO</p>
       <h1 id="seasonName">SEASON BETA 1</h1>
-      <p id="seasonBlurb">Temporada beta · quincenal · tu huella queda</p>
+      <p id="seasonBlurb">Temporada quincenal · el tablero se reinicia · tu huella queda</p>
     </div>
     <div class="fomo">
       <div class="fomo-label">TERMINA EN</div>
       <div class="fomo-clock" id="clock">--:--:--:--</div>
+      <p class="fomo-hint">Cuando llegue a cero, arranca la siguiente season. Los scores no se mezclan.</p>
     </div>
   </section>
 
@@ -54,18 +69,35 @@
 
     <aside class="marks">
       <h2>HUELLAS</h2>
-      <p class="hint">Al cerrar la demo, el speedrun pregunta si querés dejar un mensaje. Acá vive.</p>
+      <p class="hint">Al cerrar la demo, el speedrun pregunta si querés dejar un mensaje. Acá vive. Click en un operador = perfil.</p>
       <div id="marks"></div>
     </aside>
   </main>
 
+  <section class="lore" id="pines">
+    <div>
+      <p class="kicker">CÓDIGO DE PINES</p>
+      <h2>No son stickers. Son rango.</h2>
+      <p class="hint">Tocá un pin en un perfil — o acá — para leer cómo se gana y qué dice el Núcleo.</p>
+      <div class="lore-box" id="pinExplain" hidden></div>
+    </div>
+    <div class="pin-grid" id="pinLegend"></div>
+  </section>
+
   <div class="modal" id="modal" hidden>
-    <div class="sheet" role="dialog">
+    <div class="sheet" role="dialog" aria-modal="true">
       <button class="x" id="closeModal" type="button">✕</button>
-      <h2 id="pName">OPERADOR</h2>
-      <p class="hint" id="pTitle"></p>
+      <div class="ident">
+        <div class="avatar" id="pAv"></div>
+        <div>
+          <h2 id="pName">OPERADOR</h2>
+          <p class="hint" id="pTitle"></p>
+          <p class="sig" id="pSig"></p>
+        </div>
+      </div>
       <div id="pBoards"></div>
       <div class="pins" id="pPins"></div>
+      <div class="lore-box" id="pLore" hidden></div>
       <blockquote id="pMark" hidden></blockquote>
       <a id="pMedia" hidden target="_blank" rel="noopener">media</a>
     </div>
@@ -74,6 +106,7 @@
   <footer>
     COREFEED 0.1.5.0-demo · AdriverBuilds · los tops se reinician cada 15 días ·
     <a href="https://adriverbuilds.itch.io/corefeed">itch.io</a>
+    · <a href="./ops.html">ops</a>
   </footer>
 
   <script src="./config.js"></script>

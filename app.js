@@ -1,8 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.112.2';
+import { PIN_LORE, pinsFromBoards } from './pins.js';
+import { coreAvatarSvg, signalTag } from './avatar.js';
 
 const PAGE = 12;
 const cfg = window.CF;
 const sb = createClient(cfg.supabaseUrl, cfg.supabaseAnon);
+const HIDDEN = /^(qa[-_]|test[-_]|qabot|js-client|test-op|diego-qa)$/i;
 
 const BOARDS = {
   max_combo: { title: 'COMBO MÁX', fmt: (n) => `×${n}` },
@@ -40,6 +43,10 @@ function medal(rank) {
   return rank === 1 ? '🥇 ' : rank === 2 ? '🥈 ' : rank === 3 ? '🥉 ' : '';
 }
 
+function visible(row) {
+  return !HIDDEN.test(String(row.display_name || '').trim());
+}
+
 let board = 'max_combo';
 let page = 0;
 const season = seasonInfo();
@@ -65,6 +72,25 @@ document.getElementById('tabs').addEventListener('click', (e) => {
 document.getElementById('prev').onclick = () => { if (page > 0) { page -= 1; void loadBoard(); } };
 document.getElementById('next').onclick = () => { page += 1; void loadBoard(); };
 
+const legend = document.getElementById('pinLegend');
+Object.keys(PIN_LORE).forEach((id) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'pin';
+  b.textContent = id;
+  b.onclick = () => showPin(id);
+  legend.append(b);
+});
+
+function showPin(id, host = null) {
+  const lore = PIN_LORE[id];
+  if (!lore) return;
+  const box = host || document.getElementById('pinExplain');
+  if (!box) return;
+  box.hidden = false;
+  box.innerHTML = `<p class="how">${id} · CÓMO · ${lore.how}</p><p class="txt">${lore.lore}</p>`;
+}
+
 async function loadBoard() {
   const meta = BOARDS[board];
   document.getElementById('boardTitle').textContent = meta.title;
@@ -79,9 +105,10 @@ async function loadBoard() {
     .order('score', { ascending })
     .range(from, to);
   if (error) {
-    document.getElementById('rows').innerHTML = `<p class="hint">No se pudo leer el tablero. ¿Está pegado el SQL en Supabase?</p>`;
+    document.getElementById('rows').innerHTML = `<p class="hint">No se pudo leer el tablero.</p>`;
     return;
   }
+  const rowsData = (data ?? []).filter(visible);
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE));
   if (page >= pages) { page = pages - 1; return loadBoard(); }
@@ -91,17 +118,19 @@ async function loadBoard() {
   document.getElementById('next').disabled = page + 1 >= pages;
   const rows = document.getElementById('rows');
   rows.innerHTML = '';
-  (data ?? []).forEach((row, i) => {
+  rowsData.forEach((row, i) => {
     const rank = from + i + 1;
     const el = document.createElement('div');
     el.className = `row${rank === 1 ? ' gold' : rank === 2 ? ' silver' : rank === 3 ? ' bronze' : ''}`;
-    el.innerHTML = `<div class="rk">${medal(rank)}#${rank}</div><div class="nm"></div><div class="sc"></div>`;
+    el.style.animationDelay = `${i * 40}ms`;
+    el.innerHTML = `<div class="rk">${medal(rank)}#${rank}</div><div class="av"></div><div class="nm"></div><div class="sc"></div>`;
+    el.querySelector('.av').innerHTML = coreAvatarSvg(row.player_id, 36);
     el.querySelector('.nm').textContent = row.display_name;
     el.querySelector('.sc').textContent = meta.fmt(row.score);
     el.onclick = () => void openProfile(row.player_id);
     rows.append(el);
   });
-  if (!data?.length) {
+  if (!rowsData.length) {
     rows.innerHTML = `<p class="hint">Nadie en este tablero todavía. Sé el primero.</p>`;
   }
 }
@@ -115,15 +144,16 @@ async function loadMarks() {
     .order('created_at', { ascending: false })
     .limit(20);
   host.innerHTML = '';
-  if (!data?.length) {
+  const list = (data ?? []).filter((m) => visible({ display_name: m.display_name }));
+  if (!list.length) {
     host.innerHTML = `<p class="hint">Todavía no hay huellas esta temporada.</p>`;
     return;
   }
-  data.forEach((m) => {
+  list.forEach((m) => {
     const el = document.createElement('div');
     el.className = 'mark-card';
     el.innerHTML = `<div class="who"></div><div class="msg"></div>`;
-    el.querySelector('.who').textContent = m.display_name;
+    el.querySelector('.who').textContent = `${m.display_name} · ${signalTag(m.player_id)}`;
     el.querySelector('.msg').textContent = m.message;
     el.onclick = () => void openProfile(m.player_id);
     host.append(el);
@@ -135,8 +165,13 @@ async function openProfile(playerId) {
   modal.hidden = false;
   document.getElementById('pName').textContent = '…';
   document.getElementById('pTitle').textContent = 'cargando perfil';
+  document.getElementById('pSig').textContent = signalTag(playerId);
+  document.getElementById('pAv').innerHTML = coreAvatarSvg(playerId, 72);
   document.getElementById('pBoards').innerHTML = '';
   document.getElementById('pPins').innerHTML = '';
+  const lore = document.getElementById('pLore');
+  lore.hidden = true;
+  lore.innerHTML = '';
   const mark = document.getElementById('pMark');
   const media = document.getElementById('pMedia');
   mark.hidden = true;
@@ -162,7 +197,12 @@ async function openProfile(playerId) {
   const name = prof?.display_name || scores?.[0]?.display_name || mk?.display_name || 'OPERADOR';
   document.getElementById('pName').textContent = name;
   document.getElementById('pTitle').textContent = prof?.title || season.name;
+  const tag = signalTag(playerId);
+  document.getElementById('pSig').textContent = name.toUpperCase() === tag
+    ? `${tag} · callsign no reclamado (nombres reservados como NaN están bloqueados)`
+    : `${tag} · ID de señal permanente`;
 
+  const ranked = [];
   const host = document.getElementById('pBoards');
   for (const row of scores ?? []) {
     const { count } = await sb
@@ -172,26 +212,23 @@ async function openProfile(playerId) {
       .eq('season_id', season.id)
       [row.board === 'speedrun_ms' ? 'lt' : 'gt']('score', row.score);
     const rank = (count ?? 0) + 1;
+    ranked.push({ board: row.board, score: row.score, rank });
     const line = document.createElement('div');
     line.className = 'row';
     line.style.cursor = 'default';
+    line.style.gridTemplateColumns = '72px 1fr auto';
     const spec = BOARDS[row.board];
     line.innerHTML = `<div class="rk">#${rank}</div><div class="nm">${spec.title}</div><div class="sc">${spec.fmt(row.score)}</div>`;
     host.append(line);
   }
 
-  const pins = [];
-  const combo = scores?.find((s) => s.board === 'max_combo');
-  const cred = scores?.find((s) => s.board === 'round_credits');
-  if (combo && combo.score >= 20) pins.push('RITMO');
-  if (combo && combo.score >= 50) pins.push('CASCADA');
-  if (cred && cred.score >= 5000) pins.push('EXTRACTOR');
-  if (scores?.some((s) => s.board === 'speedrun_ms')) pins.push('DEMO COMPLETA');
   const pinHost = document.getElementById('pPins');
-  pins.forEach((p) => {
-    const s = document.createElement('span');
+  pinsFromBoards(ranked).forEach((p) => {
+    const s = document.createElement('button');
+    s.type = 'button';
     s.className = 'pin';
     s.textContent = p;
+    s.onclick = () => showPin(p, lore);
     pinHost.append(s);
   });
 

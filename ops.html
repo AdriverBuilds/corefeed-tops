@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>COREFEED · OPS</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="scan"></div>
+  <header class="top">
+    <div class="brand">
+      <div class="core-mini"></div>
+      <div>
+        <div class="mark">COREFEED OPS</div>
+        <div class="tag">PANEL DEV · NO ES EL RANKING PÚBLICO</div>
+      </div>
+    </div>
+    <a class="ghost" href="./">← TOPS</a>
+  </header>
+
+  <section class="ops-in" id="gate">
+    <p class="kicker">ACCESO OPERADOR</p>
+    <h1>Clave OPS</h1>
+    <p class="hint">Agregados de temporada + telemetría anónima. No es un heatmap de verdad todavía: eso llega cuando haya más volumen de eventos.</p>
+    <input id="key" type="password" placeholder="clave" autocomplete="current-password" />
+    <button type="button" id="go">ENTRAR</button>
+    <p class="hint" id="err"></p>
+  </section>
+
+  <main id="dash" hidden style="padding:24px 28px 60px">
+    <section class="season">
+      <div>
+        <p class="kicker">SEASON LIVE</p>
+        <h1 id="sName">—</h1>
+        <p id="sMeta" class="hint"></p>
+      </div>
+    </section>
+    <div class="grid" style="padding: 24px 0">
+      <section class="board">
+        <h2>Señal</h2>
+        <div class="bars" id="kpis"></div>
+      </section>
+      <section class="marks">
+        <h2>Primeros en cerrar la demo</h2>
+        <p class="hint">Orden por cuándo se subió el speedrun, no por tiempo. OP-OZ32 es el ID de señal del jugador que tenía el callsign reservado NaN.</p>
+        <div id="clears"></div>
+      </section>
+    </div>
+    <section class="lore" style="margin:0">
+      <div>
+        <h2>Qué falta para heatmaps / retención</h2>
+        <p class="hint">Hoy cada round_end, session_start y view de ranking se guarda en <code>telemetry_events</code>. Con 1–2 semanas de data se puede graficar retención D1/D7, duración media y mapas de muerte. Chat global / clanes / online-offline piden moderación + auth: para itch ahora Discord es más sano que un chat anónimo in-game.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="./config.js"></script>
+  <script type="module" src="./ops.js"></script>
+</body>
+</html>
