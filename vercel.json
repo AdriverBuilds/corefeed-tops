@@ -7,5 +7,8 @@
         { "key": "Cache-Control", "value": "public, max-age=30, stale-while-revalidate=120" }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/ops", "destination": "/ops.html" }
   ]
 }

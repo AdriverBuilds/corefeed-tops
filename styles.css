@@ -146,6 +146,13 @@ footer { padding: 20px 28px 40px; color: var(--muted); font-size: 13px; }
 .bar { height: 10px; background: #122030; border-radius: 99px; overflow: hidden; }
 .bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--gold)); }
 .ops-in { max-width: 420px; margin: 80px auto; padding: 24px; }
+.ops-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 18px 0 8px; }
+.ops-card { background: var(--panel); border: 1px solid var(--line); padding: 12px 14px; }
+.ops-card .ops-n { font-family: "Chakra Petch", sans-serif; font-size: 26px; color: var(--cyan); margin-top: 4px; }
+.heat-canvas { width: 320px; height: 320px; image-rendering: pixelated; border: 1px solid var(--line); background: #080712; }
+@media (max-width: 1100px) {
+  .ops-kpis { grid-template-columns: repeat(2, 1fr); }
+}
 .ops-in input {
   width: 100%; margin: 12px 0; padding: 12px; background: #050810; border: 2px solid var(--line); color: var(--text);
 }

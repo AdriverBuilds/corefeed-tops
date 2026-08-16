@@ -3,9 +3,40 @@ import { PIN_LORE, pinsFromBoards } from './pins.js';
 import { coreAvatarSvg, signalTag } from './avatar.js';
 
 const PAGE = 12;
+const LB_FAMILY = '0.1.7';
 const cfg = window.CF;
 const sb = createClient(cfg.supabaseUrl, cfg.supabaseAnon);
-const HIDDEN = /^(qa[-_]|test[-_]|qabot|js-client|test-op|diego-qa)$/i;
+
+function hiddenRow(row) {
+  const name = String(row.display_name || '').trim();
+  const pid = String(row.player_id || '');
+  if (/^OP-[A-Z0-9]{3,8}$/i.test(name)) return true;
+  if (/^op_[a-z0-9-]{6,}$/i.test(name)) return true;
+  if (/^(qa[-_]|test[-_]|qabot)/i.test(name)) return true;
+  if (/adriverbuilds/i.test(name)) return true;
+  if (/(js-client|test-op|diego-qa|qabot|_test_|_qa|__cfbot|playbot)/i.test(pid)) return true;
+  return false;
+}
+
+function visible(row) {
+  return !hiddenRow(row);
+}
+
+function mergeBest(rows, boardId) {
+  const map = new Map();
+  for (const row of rows || []) {
+    const prev = map.get(row.player_id);
+    if (!prev) {
+      map.set(row.player_id, row);
+      continue;
+    }
+    const better = boardId === 'speedrun_ms' ? row.score < prev.score : row.score > prev.score;
+    if (better) map.set(row.player_id, row);
+  }
+  const out = [...map.values()];
+  out.sort((a, b) => boardId === 'speedrun_ms' ? a.score - b.score : b.score - a.score);
+  return out;
+}
 
 const BOARDS = {
   max_combo: { title: 'COMBO MÁX', fmt: (n) => `×${n}` },
@@ -21,13 +52,14 @@ function seasonInfo(d = new Date()) {
   const m = d.getUTCMonth();
   const date = d.getUTCDate();
   const firstHalf = date <= 15;
-  const id = `S${y}-${String(m + 1).padStart(2, '0')}${firstHalf ? 'A' : 'B'}`;
+  const baseId = `S${y}-${String(m + 1).padStart(2, '0')}${firstHalf ? 'A' : 'B'}`;
+  const id = `${baseId}@${LB_FAMILY}`;
   const start = Date.UTC(y, m, firstHalf ? 1 : 16);
   const end = firstHalf ? Date.UTC(y, m, 16) : Date.UTC(y, m + 1, 1);
   const months = (y - 2026) * 12 + (m - 7);
   const number = Math.max(1, months * 2 + (firstHalf ? 1 : 2));
   const name = number <= 8 ? `SEASON BETA ${number}` : `SEASON ${number - 8}`;
-  return { id, number, name, start, end };
+  return { id, baseId, ids: [id, baseId], number, name, start, end };
 }
 
 function clock(ms) {
@@ -41,10 +73,6 @@ function clock(ms) {
 
 function medal(rank) {
   return rank === 1 ? '🥇 ' : rank === 2 ? '🥈 ' : rank === 3 ? '🥉 ' : '';
-}
-
-function visible(row) {
-  return !HIDDEN.test(String(row.display_name || '').trim());
 }
 
 let board = 'max_combo';
@@ -95,23 +123,23 @@ async function loadBoard() {
   const meta = BOARDS[board];
   document.getElementById('boardTitle').textContent = meta.title;
   const from = page * PAGE;
-  const to = from + PAGE - 1;
   const ascending = board === 'speedrun_ms';
-  const { data, count, error } = await sb
+  const { data, error } = await sb
     .from('leaderboard_scores')
-    .select('player_id, display_name, score, board, season_id, updated_at', { count: 'exact' })
+    .select('player_id, display_name, score, board, season_id, updated_at')
     .eq('board', board)
-    .eq('season_id', season.id)
+    .in('season_id', season.ids)
     .order('score', { ascending })
-    .range(from, to);
+    .limit(200);
   if (error) {
     document.getElementById('rows').innerHTML = `<p class="hint">No se pudo leer el tablero.</p>`;
     return;
   }
-  const rowsData = (data ?? []).filter(visible);
-  const total = count ?? 0;
+  const rowsDataAll = mergeBest(data ?? [], board).filter(visible);
+  const total = rowsDataAll.length;
   const pages = Math.max(1, Math.ceil(total / PAGE));
   if (page >= pages) { page = pages - 1; return loadBoard(); }
+  const rowsData = rowsDataAll.slice(from, from + PAGE);
   document.getElementById('boardMeta').textContent = `${total} operadores · página ${page + 1}/${pages}`;
   document.getElementById('pageInfo').textContent = `${page + 1} / ${pages}`;
   document.getElementById('prev').disabled = page <= 0;
@@ -140,7 +168,7 @@ async function loadMarks() {
   const { data } = await sb
     .from('operator_marks')
     .select('player_id, display_name, message, media_url, created_at')
-    .eq('season_id', season.id)
+    .in('season_id', season.ids)
     .order('created_at', { ascending: false })
     .limit(20);
   host.innerHTML = '';
@@ -177,11 +205,20 @@ async function openProfile(playerId) {
   mark.hidden = true;
   media.hidden = true;
 
-  const { data: scores } = await sb
+  const { data: scoreRows } = await sb
     .from('leaderboard_scores')
     .select('board, score, display_name')
     .eq('player_id', playerId)
-    .eq('season_id', season.id);
+    .in('season_id', season.ids);
+  const scores = [];
+  const seenBoard = new Map();
+  for (const row of scoreRows ?? []) {
+    const prev = seenBoard.get(row.board);
+    if (!prev) { seenBoard.set(row.board, row); continue; }
+    const better = row.board === 'speedrun_ms' ? row.score < prev.score : row.score > prev.score;
+    if (better) seenBoard.set(row.board, row);
+  }
+  scores.push(...seenBoard.values());
   const { data: prof } = await sb
     .from('operator_profiles')
     .select('display_name, bio, title, mark_url')
@@ -191,7 +228,7 @@ async function openProfile(playerId) {
     .from('operator_marks')
     .select('message, media_url, display_name')
     .eq('player_id', playerId)
-    .eq('season_id', season.id)
+    .in('season_id', season.ids)
     .maybeSingle();
 
   const name = prof?.display_name || scores?.[0]?.display_name || mk?.display_name || 'OPERADOR';
@@ -209,7 +246,7 @@ async function openProfile(playerId) {
       .from('leaderboard_scores')
       .select('*', { count: 'exact', head: true })
       .eq('board', row.board)
-      .eq('season_id', season.id)
+      .in('season_id', season.ids)
       [row.board === 'speedrun_ms' ? 'lt' : 'gt']('score', row.score);
     const rank = (count ?? 0) + 1;
     ranked.push({ board: row.board, score: row.score, rank });

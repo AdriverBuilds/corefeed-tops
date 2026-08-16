@@ -4,57 +4,180 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>COREFEED · OPS</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./ops.css" />
 </head>
 <body>
-  <div class="scan"></div>
-  <header class="top">
-    <div class="brand">
-      <div class="core-mini"></div>
-      <div>
-        <div class="mark">COREFEED OPS</div>
-        <div class="tag">PANEL DEV · NO ES EL RANKING PÚBLICO</div>
-      </div>
-    </div>
-    <a class="ghost" href="./">← TOPS</a>
-  </header>
+  <div class="lattice"></div>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="./">
+        <div class="core-canon" aria-hidden="true"></div>
+        <div>
+          <div class="mark">COREFEED OPS</div>
+          <div class="tag">INTERNO · HISTÓRICO REAL · QUÉ CAMBIAR</div>
+        </div>
+      </a>
+      <nav class="nav">
+        <span class="meta" id="clock"></span>
+        <a class="ghost" href="./">← TOPS</a>
+      </nav>
+    </header>
 
-  <section class="ops-in" id="gate">
-    <p class="kicker">ACCESO OPERADOR</p>
-    <h1>Clave OPS</h1>
-    <p class="hint">Agregados de temporada + telemetría anónima. No es un heatmap de verdad todavía: eso llega cuando haya más volumen de eventos.</p>
-    <input id="key" type="password" placeholder="clave" autocomplete="current-password" />
-    <button type="button" id="go">ENTRAR</button>
-    <p class="hint" id="err"></p>
-  </section>
-
-  <main id="dash" hidden style="padding:24px 28px 60px">
-    <section class="season">
-      <div>
-        <p class="kicker">SEASON LIVE</p>
-        <h1 id="sName">—</h1>
-        <p id="sMeta" class="hint"></p>
-      </div>
+    <section class="ops-in" id="gate">
+      <p class="kicker">ACCESO OPERADOR</p>
+      <h1>Key OPS</h1>
+      <p class="hint">Churn R1, HUB, segmentos, histórico (día / semana / mes / año / siempre). No es público.</p>
+      <input id="key" type="password" placeholder="key" autocomplete="current-password" />
+      <button type="button" id="go">ENTRAR</button>
+      <p class="hint" id="err"></p>
     </section>
-    <div class="grid" style="padding: 24px 0">
-      <section class="board">
-        <h2>Señal</h2>
-        <div class="bars" id="kpis"></div>
-      </section>
-      <section class="marks">
-        <h2>Primeros en cerrar la demo</h2>
-        <p class="hint">Orden por cuándo se subió el speedrun, no por tiempo. OP-OZ32 es el ID de señal del jugador que tenía el callsign reservado NaN.</p>
-        <div id="clears"></div>
-      </section>
-    </div>
-    <section class="lore" style="margin:0">
-      <div>
-        <h2>Qué falta para heatmaps / retención</h2>
-        <p class="hint">Hoy cada round_end, session_start y view de ranking se guarda en <code>telemetry_events</code>. Con 1–2 semanas de data se puede graficar retención D1/D7, duración media y mapas de muerte. Chat global / clanes / online-offline piden moderación + auth: para itch ahora Discord es más sano que un chat anónimo in-game.</p>
-      </div>
-    </section>
-  </main>
 
+    <main class="dash" id="dash" hidden>
+      <div class="dash-head">
+        <div>
+          <p class="kicker">CENTRO DE MANDO</p>
+          <h1 id="sName">Temporada</h1>
+          <p class="meta" id="sMeta"></p>
+          <p class="banner" id="histNote"></p>
+          <p class="banner" id="mixNote"></p>
+        </div>
+        <div>
+          <div class="range" id="season">
+            <button type="button" data-season="current" class="on">Actual</button>
+            <button type="button" data-season="S2026-08A">BETA 1</button>
+            <button type="button" data-season="S2026-08B">BETA 2</button>
+            <button type="button" data-season="all">Todas</button>
+          </div>
+          <div class="range" id="ver" style="margin-top:6px">
+            <button type="button" data-version="0.1.7" class="on">0.1.7 familia</button>
+            <button type="button" data-version="0.1.7.1-demo">0.1.7.1</button>
+            <button type="button" data-version="0.1.7.0-demo">0.1.7.0</button>
+            <button type="button" data-version="0.1.6.1-demo">0.1.6.1 itch</button>
+            <button type="button" data-version="">Todas ver.</button>
+          </div>
+          <div class="range" id="range" style="margin-top:6px">
+            <button type="button" data-days="1">24h</button>
+            <button type="button" data-days="7">7d</button>
+            <button type="button" data-days="14">14d</button>
+            <button type="button" data-days="30">30d</button>
+            <button type="button" data-days="90">90d</button>
+            <button type="button" data-days="365">Año</button>
+            <button type="button" data-days="0" class="on">Siempre</button>
+          </div>
+          <p class="meta" id="updated" style="margin-top:8px;text-align:right"></p>
+        </div>
+      </div>
+
+      <div id="playbook" class="playbook"></div>
+      <div class="insights" id="insights"></div>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="grid-2">
+        <section class="board">
+          <h2>Laboratorio ronda 1 → 2</h2>
+          <p class="hint">Si combo y duración son iguales entre los que se van y los que siguen, el combate no es el problema: el HUB sí.</p>
+          <div class="split" id="r1lab"></div>
+        </section>
+        <section class="board">
+          <h2>Quién juega de verdad</h2>
+          <p class="hint">% jugadores vs % rondas. Si las ballenas cargan el playtime, el loop late funciona — el onboarding no.</p>
+          <div id="segments"></div>
+        </section>
+      </div>
+
+      <div class="grid-2">
+        <section class="board">
+          <h2>Embudo</h2>
+          <div class="funnel" id="funnel"></div>
+        </section>
+        <section class="board">
+          <h2>Calendario · hora × día (Venezuela)</h2>
+          <p class="hint">Más cian = más rondas. Domingo = 0.</p>
+          <div class="cal" id="cal"></div>
+        </section>
+      </div>
+
+      <div class="grid-2">
+        <section class="board">
+          <h2>Cuándo juegan · hora Venezuela (UTC−4)</h2>
+          <p class="hint" id="hoursHint"></p>
+          <canvas id="hours" width="960" height="220" class="hours-canvas"></canvas>
+        </section>
+        <section class="board">
+          <h2>Tendencia diaria</h2>
+          <canvas id="days" width="640" height="220" class="hours-canvas"></canvas>
+        </section>
+      </div>
+
+      <div class="grid-2">
+        <section class="board">
+          <h2>Semanal</h2>
+          <div class="bars" id="weeks"></div>
+        </section>
+        <section class="board">
+          <h2>Mensual / anual</h2>
+          <div class="bars" id="months"></div>
+        </section>
+      </div>
+
+      <div class="grid-2">
+        <section class="board">
+          <h2>Dónde se detienen (ronda máxima)</h2>
+          <div class="bars" id="maxRounds"></div>
+        </section>
+        <section class="board">
+          <h2>Por nivel de Núcleo</h2>
+          <div class="bars" id="levels"></div>
+        </section>
+      </div>
+
+      <div class="grid-3">
+        <section class="board">
+          <h2>Mundos</h2>
+          <div class="bars" id="worlds"></div>
+        </section>
+        <section class="board">
+          <h2>Combo</h2>
+          <div class="bars" id="combos"></div>
+        </section>
+        <section class="board">
+          <h2>Duración de ronda</h2>
+          <div class="bars" id="durs"></div>
+        </section>
+      </div>
+
+      <div class="grid-2">
+        <section class="board">
+          <h2>Heatmap de feed</h2>
+          <p class="hint" id="heatHint"></p>
+          <canvas id="heat" width="512" height="512" class="heat-canvas"></canvas>
+        </section>
+        <section class="board">
+          <h2>Eventos</h2>
+          <div class="bars" id="events"></div>
+        </section>
+      </div>
+
+      <div class="grid-3">
+        <section class="board">
+          <h2>Versiones</h2>
+          <div class="bars" id="versions"></div>
+        </section>
+        <section class="board">
+          <h2>Circuito</h2>
+          <div class="bars" id="circuit"></div>
+        </section>
+        <section class="board">
+          <h2>Primeros speedruns</h2>
+          <div id="clears"></div>
+        </section>
+      </div>
+    </main>
+  </div>
   <script src="./config.js"></script>
   <script type="module" src="./ops.js"></script>
 </body>
